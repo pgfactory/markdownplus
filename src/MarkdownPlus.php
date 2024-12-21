@@ -657,14 +657,19 @@ class MarkdownPlus extends MarkdownExtra
         // create block array
         $block = [
             'Accordion',
-            'content' => '',
-            'summary' => '',
-            'attrs' => '',
-            'accordionAttrs' => '',
+            'accordion' => [
+                [
+                    'content' => '',
+                    'summary' => '',
+                    'accordionAttrs' => '',
+
+                ]
+            ],
         ];
+        $blockInx = 0;
 
         if (preg_match('/\{: (.*?) } \s* $/x', $lines[$current], $m)) {
-            $block['accordionAttrs'] = $m[1];
+            $block['accordion'][$blockInx]['accordionAttrs'] = $m[1];
             $lines[$current] = str_replace($m[0], '', $lines[$current]);
         }
 
@@ -672,16 +677,33 @@ class MarkdownPlus extends MarkdownExtra
             throw new Exception("Syntax error in line $current: '{$lines[$current]}'");
         }
         $marker = $m[1];
-        $block['summary'] = $m[2];
-        $endPattern = "|^$marker\s*$|";
+        $block['accordion'][$blockInx]['summary'] = $m[2];
+        $endPattern = "|^$marker|"; // end or start of next accordion
 
         // consume all lines until $marker, e.g. <>
         for($i = $current+1, $count = count($lines)-1; $i < $count; $i++) {
             $line = $lines[$i];
             if (!preg_match($endPattern, $line)) {
-                $block['content'] .= "$line\n";
+                $block['accordion'][$blockInx]['content'] .= "$line\n";
             } else {
-                break;
+                if (preg_match("|^$marker\s*(.+)$|", $line, $m)) {
+                    $line = $m[1];
+                    $blockInx++;
+
+                    $accordionAttrs = '';
+                    if (preg_match('/(.*) \{: (.*?) } \s* $/x', $line, $mm)) {
+                        $line = $mm[1];
+                        $accordionAttrs = $mm[2];
+                    }
+                    $block['accordion'][$blockInx] = [
+                        'content' => '',
+                        'summary' => $line,
+                        'accordionAttrs' => $accordionAttrs,
+                    ];
+
+                } else {
+                    break;
+                }
             }
         }
         return [$block, $i];
@@ -692,38 +714,48 @@ class MarkdownPlus extends MarkdownExtra
      * @return string
      * @throws Exception
      */
-    protected function renderAccordion(array $block): string
+    protected function renderAccordion(array $blocks): string
     {
-        if ($accordionAttrs = $block['accordionAttrs']) {
-            $attrs = MdPlusHelper::parseInlineBlockArguments('.mdp-accordion '.$accordionAttrs);
-            $attrsStr = $attrs['htmlAttrs'];
-        } else {
-            $attrsStr = ' class="mdp-accordion"';
-        }
-
         $out = '';
-        $summary = self::compileParagraph($block['summary']);
-        $body = self::compile($block['content']);
-        $out .= <<<EOT
 
-<details>
-  <summary>$summary</summary>
-  <div class="mdp-accordion-body">
+        $wrapperClass = (sizeof($blocks['accordion']) > 1) ? ' mdp-accordion-auto-close' : '';
+
+        foreach ($blocks['accordion'] as $block) {
+            if ($accordionAttrs = $block['accordionAttrs']) {
+                $attrs = MdPlusHelper::parseInlineBlockArguments('.mdp-accordion ' . $accordionAttrs);
+                $attrsStr = $attrs['htmlAttrs'];
+            } else {
+                $attrsStr = ' class="mdp-accordion"';
+            }
+
+            $summary = self::compileParagraph($block['summary']);
+            $body = self::compile($block['content']);
+            $out .= <<<EOT
+
+  <div $attrsStr>
+    <details>
+      <summary>$summary</summary>
+      <div class="mdp-accordion-body">
 $body
-  </div><!-- /.mdp-accordion-body -->
-</details>
+      </div><!-- /.mdp-accordion-body -->
+    </details>
+  </div><!-- /accordion -->
+
 
 EOT;
+        }
 
         $out = <<<EOT
 
-<div $attrsStr>
-$out</div><!-- /accordion -->
+<div class="mdp-accordion-wrapper$wrapperClass">
+$out
+</div><!-- /accordion-wrapper -->
 
 
 EOT;
         return $out;
     } // renderAccordion
+
 
 
     protected function identifyDefinitionList(string $line, array $lines, int $current): bool
