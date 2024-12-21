@@ -745,7 +745,8 @@ $body
 EOT;
         }
 
-        $out = <<<EOT
+        if ($wrapperClass) {
+            $out = <<<EOT
 
 <div class="mdp-accordion-wrapper$wrapperClass">
 $out
@@ -753,6 +754,7 @@ $out
 
 
 EOT;
+        }
         return $out;
     } // renderAccordion
 
