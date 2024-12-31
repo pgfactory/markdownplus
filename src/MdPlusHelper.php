@@ -2,16 +2,19 @@
 
 namespace PgFactory\MarkdownPlus;
 
+
 use Kirby\Data\Yaml as Yaml;
 use Kirby\Data\Json as Json;
 use Exception;
 use Kirby\Exception\InvalidArgumentException;
+use Kirby\Http\Url;
 use PgFactory\PageFactory\PageFactory;
 use function PgFactory\PageFactory\indentLines;
 
-const MDPMD_CACHE_PATH =       'site/cache/markdownplus/';
+define('MDP_BASE_PATH',         dirname($_SERVER['SCRIPT_FILENAME']) . '/');
+define('MDPMD_CACHE_PATH',       MDP_BASE_PATH . 'site/cache/markdownplus/');
 const MDPMD_MKDIR_MASK =       0700;
-const MDP_LOGS_PATH =          'site/logs/';
+define('MDP_LOGS_PATH',          MDP_BASE_PATH . 'site/logs/');
 const BLOCK_SHIELD =           'div shielded';
 const INLINE_SHIELD =          'span shielded';
 const MD_SHIELD =              'span md';
@@ -109,8 +112,8 @@ class MdPlusHelper
         }
         $path = kirby()->option('pgfactory.markdownplus.iconsPath');
         if (!$path) {
-            if (is_dir('site/plugins/pagefactory/assets/icons/')) {
-                $paths[0] = 'site/plugins/pagefactory/assets/icons/';
+            if (is_dir(MDP_BASE_PATH . 'site/plugins/pagefactory/assets/icons/')) {
+                $paths[0] = MDP_BASE_PATH . 'site/plugins/pagefactory/assets/icons/';
             } else {
                 $paths = [];
             }

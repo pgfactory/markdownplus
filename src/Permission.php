@@ -6,7 +6,7 @@ use Kirby\Data\Data;
 use PgFactory\PageFactory\PageFactory;
 use function PgFactory\PageFactory\explodeTrim;
 
-const MDP_LOG_PATH = 'site/logs/';
+const MDP_LOG_PATH = MDP_BASE_PATH . 'site/logs/';
 
 
 /**
@@ -224,11 +224,8 @@ class Permission
      */
     public static function isLocalhost(): bool
     {
-        // url-arg ?localhost=false let's you mimick a remote host:
-        if (($_GET['localhost']??'') === 'false') {
-            return false;
-        }
-        return self::ipInRange(kirby()->visitor()->ip(), $_SERVER['SERVER_ADDR']);
+        $ip = $_SERVER['SERVER_ADDR'];
+        return ($ip === '::1' || $ip === '127.0.0.1' || str_starts_with($ip, '192.168.'));
     } // isLocalhost
 
 

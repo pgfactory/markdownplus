@@ -35,8 +35,11 @@ const KIRBYTAG_PATTERNS = [
     'date' => '(date:',
     'email' => '(email:'
 ];
-const ABBREVIATIONS_FILE    = 'site/custom/variables/abbreviations.txt';
-const SMARTYPANTS_FILE    = 'site/custom/variables/smartypants.txt';
+define('MDP_KIRBY_BASE_PATH',    dirname($_SERVER['SCRIPT_FILENAME']) . '/');
+
+
+define('ABBREVIATIONS_FILE',    MDP_KIRBY_BASE_PATH . 'site/custom/variables/abbreviations.txt');
+define('SMARTYPANTS_FILE',      MDP_KIRBY_BASE_PATH . 'site/custom/variables/smartypants.txt');
 
 const SMARTYPANTS = [
     '/(?<!-)-&gt;/ms'  => '&rarr;',
