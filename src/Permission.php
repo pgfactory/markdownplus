@@ -41,7 +41,7 @@ class Permission
 
         // handle special option 'localhost' -> take session var into account:
         session_start();
-        if (($_SESSION['pfy.debug']??null) === false) { // debug explicitly false
+        if (($_SESSION['pfy.dev']??null) === false) { // dev explicitly false
             $allowOnLocalhost = false;
         }
         session_abort();
@@ -161,7 +161,7 @@ class Permission
             self::$anonAccess[$page] = true;
             self::mylog("AccessCode '$submittedAccessCode' validated on page '$page'", 'login-log.txt');
             return 'anon';
-        } elseif (PageFactory::$debug??false) {
+        } elseif (PageFactory::$dev??false) {
                 self::mylog("Invalid AccessCode '$submittedAccessCode' received for page '$page'", 'login-log.txt');
         }
         return false;
