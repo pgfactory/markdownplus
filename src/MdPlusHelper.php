@@ -26,6 +26,7 @@ class MdPlusHelper
      */
     private static array $availableIcons = [];
     private static array $processedSvgIcons = [];
+    private static string $bodyEndInjections = '';
 
 
     /**
@@ -198,11 +199,20 @@ class MdPlusHelper
             $svg = '<svg style="display:none" aria-hidden="true" focusable="false"' .substr($svg,4);
             $svgBody = $m[2];
             $str = "$svg<symbol id='$iconId'>$svgBody</symbol></svg>";
-            PageFactory::$pg->addBodyEndInjections($str);
+            self::$bodyEndInjections .= $str;
             self::$processedSvgIcons[$iconName] = $icon;
         }
         return $icon;
     } // renderSvgIcon
+
+
+    /**
+     * @return string
+     */
+    public static function getBodyEndInjections()
+    {
+        return self::$bodyEndInjections;
+    } // getBodyEndInjections
 
 
     /**
